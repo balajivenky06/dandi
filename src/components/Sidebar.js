@@ -52,7 +52,7 @@ export default function Sidebar({ showSidebar, setShowSidebar }) {
 
   // Sidebar classes for collapsible sidebar
   const sidebarBase =
-    'h-[calc(100vh-2rem)] w-64 bg-white border border-gray-100 shadow-xl rounded-2xl flex flex-col z-40 transition-all duration-200 fixed top-4';
+    'h-[calc(100vh-2rem)] w-64 bg-white dark:bg-[#181C2A] border border-gray-100 dark:border-[#232b3e] shadow-xl rounded-2xl flex flex-col z-40 transition-all duration-200 fixed top-4';
   const sidebarPosition = showSidebar ? 'left-4' : '-left-80';
 
   return (
@@ -66,7 +66,7 @@ export default function Sidebar({ showSidebar, setShowSidebar }) {
       )}
       {/* Sidebar: overlay on mobile, fixed on desktop */}
       <aside
-        className={`${sidebarBase} bg-white dark:bg-[#181C2A] ${sidebarPosition}`}
+        className={`${sidebarBase} ${sidebarPosition}`}
         style={{ maxHeight: 'calc(100vh - 2rem)' }}
       >
         {/* Close button only when sidebar is visible */}
@@ -88,7 +88,7 @@ export default function Sidebar({ showSidebar, setShowSidebar }) {
               <path d="M16 4V28" stroke="#ef4444" strokeWidth="3" strokeLinecap="round"/>
             </svg>
           </span>
-          <span className="font-extrabold text-2xl tracking-tight text-gray-800">Dandi</span>
+          <span className="font-extrabold text-2xl tracking-tight text-gray-800 dark:text-gray-100">Dandi</span>
         </div>
         {/* Workspace/User dropdown */}
         {/* Navigation */}
@@ -103,12 +103,12 @@ export default function Sidebar({ showSidebar, setShowSidebar }) {
                 rel={link.external ? 'noopener noreferrer' : undefined}
                 className={`
                   flex items-center gap-3 px-4 py-2 rounded-xl font-medium transition
-                  ${isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-50'}
+                  ${isActive ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#232b3e]'}
                 `}
               >
-                <link.icon className={`h-5 w-5 ${isActive ? 'text-blue-500' : 'text-gray-300'}`} />
+                <link.icon className={`h-5 w-5 ${isActive ? 'text-blue-500 dark:text-blue-300' : 'text-gray-300 dark:text-gray-500'}`} />
                 <span className="flex-1">{link.name}</span>
-                {link.external && <ArrowTopRightOnSquareIcon className="h-4 w-4 text-gray-300 ml-1" />}
+                {link.external && <ArrowTopRightOnSquareIcon className="h-4 w-4 text-gray-300 dark:text-gray-500 ml-1" />}
               </Link>
             );
           })}

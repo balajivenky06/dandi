@@ -16,28 +16,28 @@ export default function ApiKeyCard({
   maskApiKey,
 }) {
   return (
-    <section className="bg-white rounded-lg shadow p-4 border border-gray-200" aria-label={`API Key ${apiKey.name}`}> 
+    <section className="bg-white dark:bg-[#181C2A] rounded-lg shadow p-4 border border-gray-200 dark:border-[#232b3e]" aria-label={`API Key ${apiKey.name}`}> 
       <div className="flex justify-between items-center mb-2">
         {editingKey === apiKey.id ? (
           <input
             type="text"
             value={editKeyName}
             onChange={(e) => setEditKeyName(e.target.value)}
-            className="px-2 py-1 border border-gray-300 rounded text-sm w-full mr-2"
+            className="px-2 py-1 border border-gray-300 dark:border-[#232b3e] rounded text-sm w-full mr-2 bg-white dark:bg-[#232b3e] text-gray-900 dark:text-gray-100"
           />
         ) : (
-          <span className="font-bold text-gray-900">{apiKey.name}</span>
+          <span className="font-bold text-gray-900 dark:text-gray-100">{apiKey.name}</span>
         )}
-        <span className="text-xs bg-gray-100 text-gray-600 rounded px-2 py-1">{apiKey.type}</span>
+        <span className="text-xs bg-gray-100 dark:bg-[#232b3e] text-gray-600 dark:text-gray-300 rounded px-2 py-1">{apiKey.type}</span>
       </div>
-      <div className="mb-2 text-xs text-gray-500">Usage: {apiKey.usage}</div>
-      <div className="mb-2 font-mono text-gray-500">{maskApiKey(apiKey.key, visibleKeys[apiKey.id])}</div>
+      <div className="mb-2 text-xs text-gray-500 dark:text-gray-300">Usage: {apiKey.usage}</div>
+      <div className="mb-2 font-mono text-gray-500 dark:text-gray-300">{maskApiKey(apiKey.key, visibleKeys[apiKey.id])}</div>
       <div className="flex gap-2 justify-end">
         {editingKey === apiKey.id ? (
           <>
             <button 
               onClick={() => onSaveEdit(apiKey.id)} 
-              className="p-1 text-green-600 hover:text-green-700"
+              className="p-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
               title="Save"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -46,7 +46,7 @@ export default function ApiKeyCard({
             </button>
             <button 
               onClick={onCancelEdit} 
-              className="p-1 text-red-600 hover:text-red-700"
+              className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
               title="Cancel"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -58,7 +58,7 @@ export default function ApiKeyCard({
           <>
             <button
               onClick={() => onToggleVisibility(apiKey.id)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               title={visibleKeys[apiKey.id] ? "Hide API key" : "Show API key"}
             >
               {visibleKeys[apiKey.id] ? (
@@ -75,7 +75,7 @@ export default function ApiKeyCard({
             </button>
             <button
               onClick={() => onCopy(apiKey.key, apiKey.id)}
-              className={`${copySuccess === apiKey.id ? 'text-green-500' : 'text-gray-400 hover:text-gray-500'}`}
+              className={`${copySuccess === apiKey.id ? 'text-green-500 dark:text-green-400' : 'text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300'}`}
               title="Copy API key"
             >
               {copySuccess === apiKey.id ? (
@@ -91,7 +91,7 @@ export default function ApiKeyCard({
             </button>
             <button
               onClick={() => onStartEdit(apiKey)}
-              className="text-gray-400 hover:text-gray-500"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300"
               title="Edit API key"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -100,7 +100,7 @@ export default function ApiKeyCard({
             </button>
             <button
               onClick={() => onDelete(apiKey.id)}
-              className="text-gray-400 hover:text-red-500"
+              className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
               title="Delete API key"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

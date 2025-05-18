@@ -17,7 +17,7 @@ export default function ApiKeyRow({
 }) {
   return (
     <tr>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
         {editingKey === apiKey.id ? (
           <div className="flex gap-2 items-center">
             <input
@@ -49,13 +49,13 @@ export default function ApiKeyRow({
           apiKey.name
         )}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
         {apiKey.type}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
         {apiKey.usage}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 relative">
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-gray-300 relative">
         <div className="flex items-center gap-2">
           {maskApiKey(apiKey.key, visibleKeys[apiKey.id])}
         </div>
@@ -64,7 +64,7 @@ export default function ApiKeyRow({
         <div className="flex justify-end space-x-3">
           <button
             onClick={() => onToggleVisibility(apiKey.id)}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             title={visibleKeys[apiKey.id] ? "Hide API key" : "Show API key"}
           >
             {visibleKeys[apiKey.id] ? (
@@ -81,7 +81,7 @@ export default function ApiKeyRow({
           </button>
           <button
             onClick={() => onCopy(apiKey.key, apiKey.id)}
-            className={`${copySuccess === apiKey.id ? 'text-green-500' : 'text-gray-400 hover:text-gray-500'}`}
+            className={`${copySuccess === apiKey.id ? 'text-green-500 dark:text-green-400' : 'text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300'}`}
             title="Copy API key"
           >
             {copySuccess === apiKey.id ? (
@@ -98,7 +98,7 @@ export default function ApiKeyRow({
           {editingKey !== apiKey.id && (
             <button
               onClick={() => onStartEdit(apiKey)}
-              className="text-gray-400 hover:text-gray-500"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300"
               title="Edit API key"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -108,7 +108,7 @@ export default function ApiKeyRow({
           )}
           <button
             onClick={() => onDelete(apiKey.id)}
-            className="text-gray-400 hover:text-red-500"
+            className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
             title="Delete API key"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

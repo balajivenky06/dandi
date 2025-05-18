@@ -66,64 +66,6 @@ export default function Dashboard() {
   // Reset to page 1 when filters change
   useEffect(() => { setCurrentPage(1); }, [searchTerm, filterType]);
 
-  // Fetch API keys from Supabase
-  useEffect(() => {
-    let isMounted = true;
-    let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelay = 1000; // 1 second
-    const abortController = new AbortController();
-
-    const fetchApiKeys = async () => {
-      try {
-        if (!isMounted) return;
-        setLoading(true);
-        
-        const data = await apiKeyService.getApiKeys();
-        
-        // Only update state if component is still mounted
-        if (isMounted) {
-          if (Array.isArray(data)) {
-            setApiKeys(data);
-            setError(null);
-          } else {
-            throw new Error('Invalid response format from API');
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch API keys:', err);
-        
-        // Don't retry if the request was aborted
-        if (err.name === 'AbortError') {
-          console.log('Request was aborted');
-          return;
-        }
-        
-        // Retry logic
-        if (retryCount < maxRetries) {
-          retryCount++;
-          console.log(`Retrying fetch (${retryCount}/${maxRetries})...`);
-          // Keep loading state true during retries
-          setTimeout(fetchApiKeys, retryDelay * retryCount);
-        } else if (isMounted) {
-          setError(err.message || 'Failed to load API keys. Please try again later.');
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchApiKeys();
-
-    // Cleanup function
-    return () => {
-      isMounted = false;
-      abortController.abort(); // Cancel any pending requests
-    };
-  }, []); // Empty dependency array since we only want to fetch on mount
-
   // Calculate the usage percentage
   const usagePercentage = apiKeys.length > 0 ? (apiKeys.length / 1000) * 100 : 0;
 
@@ -157,24 +99,24 @@ export default function Dashboard() {
             </svg>
           </button>
         )}
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white dark:bg-[#101624]">
           {/* Overview Header */}
           <div className="flex justify-between items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-0">Overview</h1>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-0">Overview</h1>
             <div className="flex items-center gap-4">
               {/* Operational status */}
-              <div className="flex items-center bg-green-100 text-green-800 rounded-full px-3 py-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+              <div className="flex items-center bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full px-3 py-1">
+                <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full mr-2"></div>
                 <span className="text-sm">Operational</span>
               </div>
             </div>
           </div>
           
           {/* Current Plan Card - Enhanced with more vibrant colors */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="relative overflow-hidden mb-10 rounded-xl shadow-lg">
               {/* Background with animated gradient */}
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 animate-gradient-x"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 animate-gradient-x dark:from-purple-900 dark:via-pink-800 dark:to-blue-900"></div>
               
               {/* Background image */}
               <div className="absolute inset-0 opacity-15">
@@ -189,13 +131,13 @@ export default function Dashboard() {
               </div>
               
               {/* Glass effect overlay */}
-              <div className="absolute inset-0 backdrop-blur-[2px] bg-white/10"></div>
+              <div className="absolute inset-0 backdrop-blur-[2px] bg-white/10 dark:bg-[#232b3e]/30"></div>
               
               {/* Content */}
-              <div className="relative px-6 py-8 sm:p-8 md:p-10">
+              <div className="relative px-4 py-4 sm:p-6 md:p-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-                  <span className="text-sm font-medium text-white/90 mb-2 sm:mb-0 bg-white/20 rounded-md px-3 py-1 backdrop-blur-sm">CURRENT PLAN</span>
-                  <button className="bg-white/25 hover:bg-white/40 py-2 px-4 rounded-md flex items-center text-sm font-medium text-white transition-colors w-max">
+                  <span className="text-sm font-medium text-white/90 mb-2 sm:mb-0 bg-white/20 dark:bg-white/10 rounded-md px-3 py-1 backdrop-blur-sm">CURRENT PLAN</span>
+                  <button className="bg-white/25 dark:bg-white/10 hover:bg-white/40 dark:hover:bg-white/20 py-2 px-4 rounded-md flex items-center text-sm font-medium text-white transition-colors w-max">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
                     </svg>
@@ -204,7 +146,7 @@ export default function Dashboard() {
                 </div>
                 
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                  <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mt-6 mb-10 md:mb-0 drop-shadow-md">Researcher</h2>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2 mb-4 md:mb-0 drop-shadow-md">Researcher</h2>
                   
                   <div className="hidden md:block relative w-40 h-40 lg:w-48 lg:h-48">
                     <Image 
@@ -218,7 +160,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 
-                <div className="mb-8 bg-white/20 backdrop-blur-md rounded-xl p-6"
+                <div className="mb-4 bg-white/20 dark:bg-white/10 backdrop-blur-md rounded-xl p-4"
                 >
                   <div className="flex items-center mb-4">
                     <h3 className="text-lg font-medium text-white">API Keys Usage</h3>
@@ -232,9 +174,9 @@ export default function Dashboard() {
                     <span className="font-semibold">{apiKeys.length} / 1,000 Keys Created</span>
                   </div>
                   
-                  <div className="w-full bg-white/20 rounded-full h-3">
+                  <div className="w-full bg-white/20 dark:bg-white/10 rounded-full h-3">
                     <div 
-                      className="bg-blue-400 h-3 rounded-full transition-all duration-1000" 
+                      className="bg-blue-400 dark:bg-blue-600 h-3 rounded-full transition-all duration-1000" 
                       style={{ width: `${usagePercentage}%` }}
                     ></div>
                   </div>
