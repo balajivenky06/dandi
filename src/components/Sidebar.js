@@ -11,7 +11,7 @@ const navLinks = [
   },
   {
     name: 'API Playground',
-    href: '/dashboard/playground',
+    href: '/playground',
     icon: CodeBracketIcon,
     external: false,
   },

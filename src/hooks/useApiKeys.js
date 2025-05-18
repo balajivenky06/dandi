@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiKeyService } from '../services/apiKeyService';
+import { supabase } from '@/lib/supabase';
 
 export default function useApiKeys() {
   const [apiKeys, setApiKeys] = useState([]);
@@ -16,43 +17,22 @@ export default function useApiKeys() {
   const [undoEdit, setUndoEdit] = useState(null);
 
   // Fetch API keys from Supabase
-  useEffect(() => {
-    let isMounted = true;
-    let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelay = 1000;
-    const abortController = new AbortController();
+  const fetchApiKeys = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('api_keys')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    const fetchApiKeys = async () => {
-      try {
-        if (!isMounted) return;
-        setLoading(true);
-        const data = await apiKeyService.getApiKeys();
-        if (isMounted) {
-          if (Array.isArray(data)) {
-            setApiKeys(data);
-            setError(null);
-          } else {
-            throw new Error('Invalid response format from API');
-          }
-        }
-      } catch (err) {
-        if (err.name === 'AbortError') return;
-        if (retryCount < maxRetries) {
-          retryCount++;
-          setTimeout(fetchApiKeys, retryDelay * retryCount);
-        } else if (isMounted) {
-          setError(err.message || 'Failed to load API keys. Please try again later.');
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-    fetchApiKeys();
-    return () => {
-      isMounted = false;
-      abortController.abort();
-    };
+      if (error) throw error;
+      setApiKeys(data || []);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching API keys:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const showToastWithMessage = useCallback((message, type = "success") => {
@@ -67,35 +47,78 @@ export default function useApiKeys() {
   }, []);
 
   const createApiKey = useCallback(async ({ name, type }) => {
-    if (!name.trim()) return;
-    if (apiKeys.length >= 1000) {
-      alert("You have reached the maximum limit of 1000 API keys.");
-      return;
-    }
     try {
-      setLoading(true);
-      const newKey = await apiKeyService.createApiKey({ name, type });
-      setApiKeys([newKey, ...apiKeys]);
-      setError(null);
-      showToastWithMessage("API Key created");
+      // Validate input parameters
+      if (!name || typeof name !== 'string') {
+        throw new Error('Name is required and must be a string');
+      }
+
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        throw new Error('Name cannot be empty');
+      }
+
+      if (apiKeys.length >= 1000) {
+        throw new Error('You have reached the maximum limit of 1000 API keys');
+      }
+
+      // Generate a secure API key
+      const key = generateSecureApiKey();
+
+      const { data, error } = await supabase
+        .from('api_keys')
+        .insert([
+          {
+            name: trimmedName,
+            key,
+            type,
+            usage: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(error.message || 'Failed to create API key');
+      }
+
+      if (!data) {
+        throw new Error('No data returned from API key creation');
+      }
+
+      setApiKeys(prev => [data, ...prev]);
+      showToastWithMessage("API Key created successfully");
+      return data;
     } catch (err) {
-      setError('Failed to create API key. Please try again later.');
-    } finally {
-      setLoading(false);
+      const errorMessage = err.message || 'An unexpected error occurred while creating the API key';
+      setError(errorMessage);
+      console.error('Error creating API key:', {
+        message: errorMessage,
+        error: err,
+        details: err.details || err.hint || err.code
+      });
+      throw new Error(errorMessage);
     }
   }, [apiKeys, showToastWithMessage]);
 
   const deleteApiKey = useCallback(async (id) => {
     try {
-      setLoading(true);
-      await apiKeyService.deleteApiKey(id);
-      setApiKeys(apiKeys.filter((key) => key.id !== id));
-      setError(null);
+      const { error } = await supabase
+        .from('api_keys')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setApiKeys(prev => prev.filter(key => key.id !== id));
       showToastWithMessage("API Key deleted", "delete");
     } catch (err) {
-      setError('Failed to delete API key. Please try again later.');
-    } finally {
-      setLoading(false);
+      setError(err.message);
+      console.error('Error deleting API key:', err);
+      throw err;
     }
   }, [apiKeys, showToastWithMessage]);
 
@@ -109,12 +132,19 @@ export default function useApiKeys() {
       setLoading(true);
       const keyToEdit = apiKeys.find((key) => key.id === id);
       const oldName = keyToEdit ? keyToEdit.name : '';
-      await apiKeyService.updateApiKey(id, { name: editKeyName });
-      setApiKeys(
-        apiKeys.map((key) => 
-          key.id === id ? { ...key, name: editKeyName } : key
-        )
-      );
+      const { data, error } = await supabase
+        .from('api_keys')
+        .update({
+          name: editKeyName,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setApiKeys(prev => prev.map(key => key.id === id ? data : key));
       setEditingKey(null);
       setError(null);
       setShowToast(true);
@@ -134,12 +164,19 @@ export default function useApiKeys() {
     if (undoEdit) {
       setLoading(true);
       try {
-        await apiKeyService.updateApiKey(undoEdit.id, { name: undoEdit.oldName });
-        setApiKeys(
-          apiKeys.map((key) => 
-            key.id === undoEdit.id ? { ...key, name: undoEdit.oldName } : key
-          )
-        );
+        const { data, error } = await supabase
+          .from('api_keys')
+          .update({
+            name: undoEdit.oldName,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', undoEdit.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        setApiKeys(prev => prev.map(key => key.id === undoEdit.id ? data : key));
         setShowToast(true);
         setToastMessage('Edit undone');
         setToastType('success');
@@ -190,6 +227,122 @@ export default function useApiKeys() {
     return key.slice(0, 10) + '••••••••••••••••';
   }, []);
 
+  // Generate a secure API key
+  const generateSecureApiKey = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    const keyLength = 32;
+    let key = '';
+    
+    // Use crypto.getRandomValues for better security
+    const randomValues = new Uint8Array(keyLength);
+    crypto.getRandomValues(randomValues);
+    
+    for (let i = 0; i < keyLength; i++) {
+      key += chars[randomValues[i] % chars.length];
+    }
+    
+    return key;
+  };
+
+  const validateApiKey = useCallback(async (apiKey) => {
+    try {
+      // Basic format validation
+      if (!apiKey || typeof apiKey !== 'string') {
+        throw new Error('API key is required and must be a string');
+      }
+
+      const trimmedKey = apiKey.trim();
+      if (!trimmedKey) {
+        throw new Error('API key cannot be empty');
+      }
+
+      // Validate API key format
+      // API key should be 32 characters long and contain only alphanumeric characters, hyphens, and underscores
+      const apiKeyRegex = /^[A-Za-z0-9-_]{32}$/;
+      if (!apiKeyRegex.test(trimmedKey)) {
+        throw new Error('API key must be 32 characters long and contain only letters, numbers, hyphens, and underscores');
+      }
+
+      // Log the API key being validated (first 10 chars only for security)
+      console.log('Validating API key format:', {
+        length: trimmedKey.length,
+        matchesFormat: apiKeyRegex.test(trimmedKey),
+        firstChars: trimmedKey.substring(0, 10) + '...'
+      });
+
+      // Log Supabase client state
+      console.log('Supabase client state:', {
+        url: supabase.supabaseUrl,
+        hasClient: !!supabase,
+        isConnected: !!supabase?.from
+      });
+
+      const { data, error } = await supabase
+        .from('api_keys')
+        .select('*')
+        .eq('key', trimmedKey)
+        .single();
+
+      // Log the raw response for debugging
+      console.log('Supabase raw response:', { 
+        hasData: !!data,
+        dataKeys: data ? Object.keys(data) : null,
+        hasError: !!error,
+        errorType: error ? typeof error : null
+      });
+
+      if (error) {
+        // Log the full error object with all possible properties
+        console.error('Supabase validation error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+          errorObject: error
+        });
+        
+        // Handle specific Supabase error cases
+        if (error.code === 'PGRST116') {
+          throw new Error('Invalid API key format');
+        } else if (error.code === '42P01') {
+          throw new Error('API keys table not found');
+        } else if (error.code === 'PGRST301') {
+          throw new Error('No API key found with the provided value');
+        } else {
+          throw new Error(error.message || 'Failed to validate API key');
+        }
+      }
+
+      if (!data) {
+        throw new Error('Invalid API key');
+      }
+
+      return {
+        isValid: true,
+        keyData: data
+      };
+    } catch (err) {
+      // Log the full error object with all possible properties
+      console.error('API key validation error details:', {
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
+        error: JSON.stringify(err, Object.getOwnPropertyNames(err)),
+        errorObject: err
+      });
+
+      return {
+        isValid: false,
+        error: err.message || 'An unexpected error occurred while validating the API key'
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchApiKeys();
+  }, [fetchApiKeys]);
+
   return {
     apiKeys,
     setApiKeys,
@@ -222,5 +375,7 @@ export default function useApiKeys() {
     copyToClipboard,
     maskApiKey,
     showToastWithMessage,
+    validateApiKey,
+    refreshApiKeys: fetchApiKeys
   };
 } 

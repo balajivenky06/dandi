@@ -1,3 +1,5 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,7 +12,8 @@ export default function Home() {
           src="/next.svg"
           alt="Next.js logo"
           width={180}
-          height={38}
+          height={37}
+          style={{ width: 'auto', height: 'auto' }}
           priority
         />
         <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
@@ -45,6 +48,7 @@ export default function Home() {
               alt="Vercel logomark"
               width={20}
               height={20}
+              style={{ width: 'auto', height: 'auto' }}
             />
             Deploy now
           </a>
@@ -71,6 +75,7 @@ export default function Home() {
             alt="File icon"
             width={16}
             height={16}
+            style={{ width: 'auto', height: 'auto' }}
           />
           Learn
         </a>
@@ -86,6 +91,7 @@ export default function Home() {
             alt="Window icon"
             width={16}
             height={16}
+            style={{ width: 'auto', height: 'auto' }}
           />
           Examples
         </a>
@@ -101,6 +107,7 @@ export default function Home() {
             alt="Globe icon"
             width={16}
             height={16}
+            style={{ width: 'auto', height: 'auto' }}
           />
           Go to nextjs.org →
         </a>

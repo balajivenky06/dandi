@@ -2,6 +2,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { useEffect, useState } from 'react';
+import MainLayout from '../components/MainLayout';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -96,7 +97,9 @@ export default function RootLayout({ children }) {
                   </div>
                 </div>
               </header>
-              <div>{children}</div>
+              <MainLayout>
+                {children}
+              </MainLayout>
             </div>
           ) : (
             <div />
